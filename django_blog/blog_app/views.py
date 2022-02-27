@@ -17,7 +17,6 @@ class Registration(APIView):
                     "error": "",
                     "error_code": 200
                 }
-                return Response(response_message)
             else:
                 response_message = {
                     "success": False,
@@ -26,7 +25,7 @@ class Registration(APIView):
                     "error": serializer.errors[next(iter(serializer.errors))][0],
                     "error_code": 401
                 }
-                return Response(response_message)
+            # return Response(response_message)
         except Exception as e:
             response_message = {
                 "success": False,
