@@ -25,7 +25,6 @@ class Registration(APIView):
                     "error": serializer.errors[next(iter(serializer.errors))][0],
                     "error_code": 401
                 }
-            # return Response(response_message)
         except Exception as e:
             response_message = {
                 "success": False,
