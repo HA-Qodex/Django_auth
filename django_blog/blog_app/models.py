@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from django.utils import timezone
+from django.db import models
 
 
 class CustomAccountManager(BaseUserManager):

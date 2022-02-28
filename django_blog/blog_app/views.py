@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from .models import *
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -48,7 +49,7 @@ class LoginView(APIView):
 
     def post(self, request):
         user = NewUser.objects.get(email=request.data['email'])
-        print(user)
+        serializer = UserSerializer(user, many=False)
         if user is not None:
             refresh_token = RefreshToken.for_user(user)
             response_message = {
@@ -57,7 +58,7 @@ class LoginView(APIView):
                 "access_token": str(refresh_token.access_token),
                 "refresh": str(refresh_token),
                 "lifetime": str(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].days)+" days",
-                "data": "",
+                "data": {"userdata":serializer.data},
                 "error": "",
                 "error_code": 200
             }
@@ -80,4 +81,8 @@ class ViewCheck(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        return Response("This is check view")
+
+        querySet = NewUser.objects.all()
+        serializer = UserSerializer(querySet, many=True)
+
+        return Response(serializer.data)
