@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
 
 
@@ -10,9 +12,11 @@ class Registration(APIView):
         try:
             if serializer.is_valid():
                 serializer.save()
+                # refresh_token = RefreshToken.for_user(serializer)
                 response_message = {
                     "success": True,
                     "message": "User has been registered",
+                    # "token": refresh_token,
                     "data": "",
                     "error": "",
                     "error_code": 200
@@ -34,3 +38,13 @@ class Registration(APIView):
                 "error_code": 400
             }
         return Response(response_message)
+
+
+# class LoginView(TokenObtainPairView):
+#     serializer = TokenSerializer
+
+def loginView(APIView):
+    def post(self, request):
+        user = NewUser.objects.get(email=request.data['email'])
+        print(user)
+        return Response()
