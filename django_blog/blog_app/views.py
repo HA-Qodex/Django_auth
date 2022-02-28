@@ -1,22 +1,25 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
+from django.conf import settings
 
 
 class Registration(APIView):
+
+    permission_classes = [AllowAny]
+
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = NewUserSerializer(data=request.data)
         try:
             if serializer.is_valid():
                 serializer.save()
-                # refresh_token = RefreshToken.for_user(serializer)
                 response_message = {
                     "success": True,
                     "message": "User has been registered",
-                    # "token": refresh_token,
                     "data": "",
                     "error": "",
                     "error_code": 200
@@ -40,11 +43,41 @@ class Registration(APIView):
         return Response(response_message)
 
 
-# class LoginView(TokenObtainPairView):
-#     serializer = TokenSerializer
+class LoginView(APIView):
+    permission_classes = [AllowAny]
 
-def loginView(APIView):
     def post(self, request):
         user = NewUser.objects.get(email=request.data['email'])
         print(user)
-        return Response()
+        if user is not None:
+            refresh_token = RefreshToken.for_user(user)
+            response_message = {
+                "success": True,
+                "message": "Login Successful",
+                "access_token": str(refresh_token.access_token),
+                "refresh": str(refresh_token),
+                "lifetime": str(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].days)+" days",
+                "data": "",
+                "error": "",
+                "error_code": 200
+            }
+        else:
+            response_message = {
+                "success": False,
+                "message": "Login failed",
+                "access_token": "",
+                "refresh": "",
+                "lifetime": "",
+                "data": "",
+                "error": "",
+                "error_code": 401
+            }
+        return Response(response_message)
+
+
+class ViewCheck(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        return Response("This is check view")

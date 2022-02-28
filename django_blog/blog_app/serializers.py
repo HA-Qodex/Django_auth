@@ -5,7 +5,7 @@ from .models import *
 from django.conf import settings
 
 
-class UserSerializer(serializers.ModelSerializer):
+class NewUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
         fields = ('email', 'username', 'phone', 'password')
@@ -18,18 +18,3 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
-
-class TokenSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        data['type'] = "Bearer"
-        data['username'] = str(self.user)
-        data['lifetime'] = str(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].days)+" day"
-        print(str(self.user))
-        return data
-
-# class LoginView(TokenObtainPairView):
-#     serializer = TokenSerializer
