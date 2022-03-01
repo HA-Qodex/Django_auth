@@ -93,7 +93,7 @@ class LoginView(APIView):
 class PostView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
+    
     querySet = BlogPostModel.objects.all()
     serializer_class = BlogSerializer
     def perform_create(self, serializer):
