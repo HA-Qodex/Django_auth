@@ -16,7 +16,8 @@ class CustomAccountManager(BaseUserManager):
         if other_fields.get('is_admin') is not True:
             raise ValueError('Superuser must be assigned to is_admin = True.')
         if other_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must be assigned to is_superuser = True.')
+            raise ValueError(
+                'Superuser must be assigned to is_superuser = True.')
 
         return self.create_user(email, username, phone, password, **other_fields)
 
@@ -26,7 +27,8 @@ class CustomAccountManager(BaseUserManager):
             raise ValueError(_('You must provide an email address'))
 
         email = self.normalize_email(email)
-        user = self.model(email=email, username=username, phone=phone, **other_fields)
+        user = self.model(email=email, username=username,
+                          phone=phone, **other_fields)
         user.set_password(password)
         user.save()
         return user
@@ -48,3 +50,17 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class BlogPostModel(models.Model):
+    user = models.ForeignKey(
+        NewUser, on_delete=models.CASCADE, related_name='blog_post')
+
+    title = models.CharField(max_length=150)
+    description = models.TextField()
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

@@ -19,7 +19,22 @@ class NewUserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
         fields = ['id', 'username', 'email', 'phone']
+
+
+class BlogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BlogPostModel
+        # fields = '__all__'
+        exclude = ['user', 'is_active']
+
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogPostModel
+        fields= '__all__'
