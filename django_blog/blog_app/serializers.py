@@ -31,7 +31,7 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPostModel
         # fields = '__all__'
-        exclude = ['user', 'is_active']
+        exclude = ['user_id', 'is_active']
 
 
 class PostSerializer(serializers.ModelSerializer):

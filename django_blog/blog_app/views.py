@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, ListCreateAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
 from django.conf import settings
@@ -58,8 +58,8 @@ class LoginView(APIView):
                 response_message = {
                     "success": True,
                     "message": "Login Successful",
-                    "access_token": str(refresh_token.access_token),
-                    "refresh": str(refresh_token),
+                    "access_token": "Bearer "+str(refresh_token.access_token),
+                    "refresh": "Bearer "+str(refresh_token),
                     "lifetime": str(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].days)+" days",
                     "data": {"userdata": serializer.data},
                     "error": "",
@@ -90,21 +90,54 @@ class LoginView(APIView):
         return Response(response_message)
 
 
-class PostView(CreateAPIView):
+class PostView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    
-    querySet = BlogPostModel.objects.all()
+
+    queryset = BlogPostModel.objects.all()
     serializer_class = BlogSerializer
+
     def perform_create(self, serializer):
-        return serializer.save(user = self.request.user)
-        
+        return serializer.save(user_id=self.request.user)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        
+
         serializer = PostSerializer(instance, many=False)
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        response_message = {
+            "success": True,
+            "message": "Data has been saved successfully",
+            "data": serializer.data,
+            "error": "",
+            "error_code": 200
+        }
+
+        return Response(response_message, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PostSerializer(queryset, many=True)
+
+        response_message = {
+            "success": True,
+            "message": "",
+            "data": serializer.data,
+            "error": "",
+            "error_code": 200
+        }
+
+        return Response(response_message)
+
+    def get_queryset(self):
+        queryset = BlogPostModel.objects.filter(is_active=True)
+        return queryset

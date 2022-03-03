@@ -53,7 +53,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
 
 
 class BlogPostModel(models.Model):
-    user = models.ForeignKey(
+    user_id = models.ForeignKey(
         NewUser, on_delete=models.CASCADE, related_name='blog_post')
 
     title = models.CharField(max_length=150)
