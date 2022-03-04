@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView, ListAPIView, ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
 from django.conf import settings
@@ -94,11 +94,15 @@ class PostView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    # ------------------------- POST -------------------------
+
     queryset = BlogPostModel.objects.all()
     serializer_class = BlogSerializer
 
     def perform_create(self, serializer):
         return serializer.save(user_id=self.request.user)
+
+    # -------------------------- POST with Serializer ------------------
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -118,12 +122,15 @@ class PostView(ListCreateAPIView):
 
         return Response(response_message, status=status.HTTP_201_CREATED, headers=headers)
 
+    # ---------------------------- GET with Serializer --------------------
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
+
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = self.get_success_headers(page, many=True)
             return self.get_paginated_response(serializer.data)
 
         serializer = PostSerializer(queryset, many=True)
@@ -135,9 +142,70 @@ class PostView(ListCreateAPIView):
             "error": "",
             "error_code": 200
         }
+        return Response(response_message)
+
+#------------------------------------ Filter ---------------------------
+
+    # def get_queryset(self):
+    #     return BlogPostModel.objects.filter(is_active=False)
+
+
+class PostUpdate(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    queryset = BlogPostModel.objects.all()
+    serializer_class = BlogSerializer
+    lookup_field = 'id'
+
+#----------------------------- RETRIVE with Serializer --------------------
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = PostSerializer(instance)
+        response_message = {
+            "success": True,
+            "message": "",
+            "data": serializer.data,
+            "error": "",
+            "error_code": 200
+        }
+        return Response(response_message)
+
+#----------------------------- UPDATE with Serializer --------------------
+
+    def perform_update(self, serializer):
+        return serializer.save()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        instance=self.perform_update(serializer)
+        serializer = PostSerializer(instance, many=False)
+
+        response_message = {
+            "success": True,
+            "message": "",
+            "data": serializer.data,
+            "error": "",
+            "error_code": 200
+        }
 
         return Response(response_message)
 
-    def get_queryset(self):
-        queryset = BlogPostModel.objects.filter(is_active=True)
-        return queryset
+#----------------------------- DELETE with Serializer --------------------
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        response_message = {
+            "success": True,
+            "message": "Post has been deleted",
+            "data": "",
+            "error": "",
+            "error_code": 200
+        }
+        return Response(response_message, status=status.HTTP_204_NO_CONTENT)
