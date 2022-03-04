@@ -154,7 +154,7 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    queryset = BlogPostModel.objects.all()
+    queryset = BlogPostModel.objects.filter(is_active=True)
     serializer_class = BlogSerializer
     lookup_field = 'id'
 
@@ -196,7 +196,13 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
 
         return Response(response_message)
 
-#----------------------------- DELETE with Serializer --------------------
+#---------------------------- Temporary Delete ----------------------------------
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
+
+#-----------------------------Permanent DELETE with Serializer --------------------
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
