@@ -155,7 +155,7 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    queryset = BlogPostModel.objects.filter(is_active=True)
+    queryset = PostModel.objects.filter(is_active=True)
     serializer_class = BlogSerializer
     lookup_field = 'id'
 

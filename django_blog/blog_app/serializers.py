@@ -29,12 +29,12 @@ class UserSerializer(serializers.ModelSerializer):
 class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = BlogPostModel
+        model = PostModel
         # fields = '__all__'
         exclude = ['user_id', 'is_active']
 
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BlogPostModel
+        model = PostModel
         fields= '__all__'

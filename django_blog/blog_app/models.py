@@ -57,7 +57,7 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-class BlogPostModel(models.Model):
+class PostModel(models.Model):
     user_id = models.ForeignKey(
         NewUser, on_delete=models.CASCADE, related_name='blog_post')
 
