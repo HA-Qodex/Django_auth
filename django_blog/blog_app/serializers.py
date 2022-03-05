@@ -8,7 +8,7 @@ from django.conf import settings
 class NewUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
-        fields = ('email', 'username', 'phone', 'password')
+        fields = ('id','email', 'username', 'phone', 'password', 'user_image')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validate_data):
@@ -23,7 +23,7 @@ class NewUserSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
-        fields = ['id', 'username', 'email', 'phone']
+        fields = ['id', 'username', 'email', 'phone', 'user_image']
 
 
 class BlogSerializer(serializers.ModelSerializer):

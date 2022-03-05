@@ -35,9 +35,14 @@ class CustomAccountManager(BaseUserManager):
 
 
 class NewUser(AbstractBaseUser, PermissionsMixin):
+
+    def nameFile(instance, filename):
+        return '/'.join(['image', str(instance.email), filename])
+
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150)
     phone = models.CharField(max_length=11, unique=True)
+    user_image = models.ImageField(upload_to=nameFile, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)

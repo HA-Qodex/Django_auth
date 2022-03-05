@@ -32,6 +32,7 @@ class Registration(APIView):
                     "success": False,
                     "message": "User registration failed",
                     "data": "",
+                    "errors": serializer.errors,
                     "error": serializer.errors[next(iter(serializer.errors))][0],
                     "error_code": 401
                 }
