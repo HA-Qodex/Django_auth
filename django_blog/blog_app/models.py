@@ -57,15 +57,51 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+class CategoryModel(models.Model):
+    category = models.CharField(max_length=150)
+
+    def __str__(self):
+        return self.category
+
+
 class PostModel(models.Model):
     user_id = models.ForeignKey(
         NewUser, on_delete=models.CASCADE, related_name='blog_post')
-
+    category_id = models.ForeignKey(CategoryModel, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
     description = models.TextField()
-    
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+
+class CommentModel(models.Model):
+    user_id = models.ForeignKey(NewUser, on_delete=models.CASCADE)
+    post_id = models.ForeignKey(PostModel, on_delete=models.CASCADE)
+    comment = models.CharField(max_length=150)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.comment
+
+
+class ReplyModel(models.Model):
+    user_id = models.ForeignKey(NewUser, on_delete=models.CASCADE)
+    comment_id = models.ForeignKey(CommentModel, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
+    reply = models.TextField()
+
+    def __str__(self):
+        return self.reply
+
+
+class LikeModel(models.Model):
+    user_id = models.ForeignKey(NewUser, on_delete=models.CASCADE)
+    post_id = models.ForeignKey(PostModel, on_delete=models.CASCADE)
+    like = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.like
