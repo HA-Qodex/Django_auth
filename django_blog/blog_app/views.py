@@ -97,7 +97,7 @@ class PostView(ListCreateAPIView):
 
     # ------------------------- POST -------------------------
 
-    queryset = BlogPostModel.objects.all()
+    queryset = PostModel.objects.all()
     serializer_class = BlogSerializer
 
     def perform_create(self, serializer):
