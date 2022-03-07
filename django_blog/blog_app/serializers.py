@@ -1,6 +1,4 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import *
 from django.conf import settings
 
@@ -18,7 +16,6 @@ class NewUserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,7 +36,6 @@ class PostSerializer(serializers.ModelSerializer):
         model = PostModel
         fields = '__all__'
 
-
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentModel
@@ -52,5 +48,6 @@ class ReplySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
-    model = CategoryModel
-    fields = '__all__'
+    class Meta:
+        model = CategoryModel
+        fields = '__all__'

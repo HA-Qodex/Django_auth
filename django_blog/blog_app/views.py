@@ -145,7 +145,7 @@ class PostView(ListCreateAPIView):
         }
         return Response(response_message)
 
-#------------------------------------ Filter ---------------------------
+# ------------------------------------ Filter ---------------------------
 
     # def get_queryset(self):
     #     return BlogPostModel.objects.filter(is_active=False)
@@ -159,7 +159,7 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
     serializer_class = BlogSerializer
     lookup_field = 'id'
 
-#----------------------------- RETRIVE with Serializer --------------------
+# ----------------------------- RETRIVE with Serializer --------------------
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -173,7 +173,7 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
         }
         return Response(response_message)
 
-#----------------------------- UPDATE with Serializer --------------------
+# ----------------------------- UPDATE with Serializer --------------------
 
     def perform_update(self, serializer):
         return serializer.save()
@@ -184,7 +184,7 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        instance=self.perform_update(serializer)
+        instance = self.perform_update(serializer)
         serializer = PostSerializer(instance, many=False)
 
         response_message = {
@@ -197,13 +197,13 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
 
         return Response(response_message)
 
-#---------------------------- Temporary Delete ----------------------------------
+# ---------------------------- Temporary Delete ----------------------------------
 
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
 
-#-----------------------------Permanent DELETE with Serializer --------------------
+# -----------------------------Permanent DELETE with Serializer --------------------
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -216,3 +216,103 @@ class PostUpdate(RetrieveUpdateDestroyAPIView):
             "error_code": 200
         }
         return Response(response_message, status=status.HTTP_204_NO_CONTENT)
+
+
+class CategoryView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    queryset = CategoryModel.objects.all()
+    serializer_class = CategorySerializer
+
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            response_message = {
+                "success": True,
+                "message": "New Category Added",
+                "data": serializer.data,
+                "error": "",
+                "error_code": 200
+            }
+        except Exception as e:
+            response_message = {
+                "success": False,
+                "message": "Failed to create Category",
+                "data": "",
+                "error": str(e),
+                "error_code": 401
+            }
+        return Response(response_message)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_success_headers(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = CategorySerializer(queryset, many=True)
+        response_message = {
+            "success": True,
+            "message": "",
+            "data": serializer.data,
+            "error": "",
+            "error_code": 200
+        }
+        return Response(response_message)
+
+
+class DeleteCategoryView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    queryset = CategoryModel.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'id'
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        response_message = {
+            "success": True,
+            "message": "Category has been deleted",
+            "data": "",
+            "error": "",
+            "error_code": 200
+        }
+        return Response(response_message, status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    queryset = CommentModel.objects.all()
+    serializer_class = CommentSerializer
+
+    def perform_create(self, serializer):
+        print(serializer.data)
+        return serializer.save(user_id=self.request.user, post_id=CommentModel.objects.get().id)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        serializer = CommentSerializer(instance, many=False)
+
+        response_message = {
+            "success": True,
+            "message": "Comment has been added successfully",
+            "data": serializer.data,
+            "error": "",
+            "error_code": 200
+        }
+
+        return Response(response_message, status=status.HTTP_201_CREATED, headers=headers)
